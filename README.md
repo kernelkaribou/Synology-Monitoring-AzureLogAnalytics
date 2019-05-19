@@ -4,7 +4,7 @@ Simple Python script for Synology NAS SNMP metrics and sending to Azure Log Anal
 
 ###### Requirements
 * Azure Log Analytics Workspace
-* Synology NAS with SNMP enabled
+* Synology NAS with SNMP enabled and Python Module from Package Center installed
 
 
 ###### Setup
