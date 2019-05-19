@@ -20,7 +20,7 @@ The script is best suited to run on the NAS itself and highly recommended. It ca
 8. On the Schedule:
    * Run on the following days: **Daily**
    * First run time: **00:00**
-   * Frequency: **Every minute** *The frequency of times it runs within that minute is defined in the script itself*
+   * Frequency: **Every minute**
    * Last run time: **23:59**
 9. Query the logs in [Azure Monitor Logs](https://docs.microsoft.com/en-us/azure/azure-monitor/log-query/get-started-queries)
    * The default setting for the custom log space is 'SynoMon' however Azure appends '\_CL' to all custom log entries to avoid potential overwriting of reserved logs.  An example of a query to see all metrics in the last hour:
