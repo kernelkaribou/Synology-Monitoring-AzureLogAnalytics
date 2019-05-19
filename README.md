@@ -1,5 +1,5 @@
 ## Synology-Monitoring-AzureLogAnalytics
-Simple Python script for Synology NAS SNMP metrics and sending to Azure Log Analytics (part of [Azure Monitor](https://docs.microsoft.com/en-us/azure/azure-monitor/)
+Simple Python script for Synology NAS SNMP metrics and sending to Azure Log Analytics (part of [Azure Monitor])(https://docs.microsoft.com/en-us/azure/azure-monitor/)
 
 
 ###### Requirements
