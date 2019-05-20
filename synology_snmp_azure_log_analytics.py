@@ -153,7 +153,7 @@ def get_network_counters():
 	#First confirm which instance matches the networks to be reviewed, gathering ID and Name for each
 	network_instances = []
 	for network in network_data:
-		if re.search("eth", network) or re.search("bond", network):
+		if re.search("eth+[0-9]$", network) or re.search("bond+[0-9]$", network):
 			network_instances.append(get_snmp_instances(network))
 	
 	#iterate through each network instance and get details of interestered OID
@@ -162,14 +162,18 @@ def get_network_counters():
 		#Getting Network Rx stat
 		oid_netrx = "1.3.6.1.2.1.31.1.1.1.6." + instance["id"]
 		net_rx = get_instance_value(oid_netrx, network_data, "int")
-		counter_name = "Total Bytes Received"
+		counter_name = "Total Octets Received"
 		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], net_rx, counter_type))
 	
 		oid_nettx = "1.3.6.1.2.1.31.1.1.1.10." + instance["id"]
 		net_tx = get_instance_value(oid_nettx, network_data, "int")
-		counter_name = "Total Bytes Transmitted"
+		counter_name = "Total Octets Transmitted"
 		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], net_tx, counter_type))
 
+		oid_netspeed = "1.3.6.1.2.1.2.2.1.5." + instance["id"]
+		net_speed = get_instance_value(oid_netspeed, network_data, "int")
+		counter_name = "Interface Speed"
+		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], net_speed, counter_type))
 
 
 #Getting Volume Information
