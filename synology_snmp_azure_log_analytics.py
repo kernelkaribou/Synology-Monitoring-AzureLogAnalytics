@@ -146,7 +146,7 @@ def get_memory_counters():
 def get_network_counters():
 	object_name = "Network"
 	counter_type = "Perf"
-	network_oid = "1.3.6.1.2.1.31.1.1.1"
+	network_oid = "1.3.6.1.2.1.2.2.1"
 	snmpwalk_flags = "n"
 	network_data = get_snmp_data(host_address, network_oid, snmpwalk_flags)
 	
@@ -160,12 +160,12 @@ def get_network_counters():
 	for instance in network_instances:
 	
 		#Getting Network Rx stat
-		oid_netrx = "1.3.6.1.2.1.31.1.1.1.6." + instance["id"]
+		oid_netrx = "1.3.6.1.2.1.2.2.1.10." + instance["id"]
 		net_rx = get_instance_value(oid_netrx, network_data, "int")
 		counter_name = "Total Octets Received"
 		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], net_rx, counter_type))
 	
-		oid_nettx = "1.3.6.1.2.1.31.1.1.1.10." + instance["id"]
+		oid_nettx = "1.3.6.1.2.1.2.2.1.16." + instance["id"]
 		net_tx = get_instance_value(oid_nettx, network_data, "int")
 		counter_name = "Total Octets Transmitted"
 		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], net_tx, counter_type))
