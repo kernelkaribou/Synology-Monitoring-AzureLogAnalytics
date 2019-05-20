@@ -17,7 +17,7 @@ The script is best suited to run on the NAS itself and highly recommended. It ca
 5. On the Synology NAS, Select Package Center > All Packages > Python Module > Install and follow the prompts.
 6. On the Synology NAS, Select Control Panel > Task Scheduler > Create >> Scheduled Task >> User-defined Script.
 7. Give the Task a recognizable name.
-8. On the Task Settings, set the Run command to *bash /path/to/syno_to_azure.py*
+8. On the Task Settings, set the Run command to *python /path/to/syno_to_azure.py*
 9. On the Schedule:
    * Run on the following days: **Daily**
    * First run time: **00:00**
