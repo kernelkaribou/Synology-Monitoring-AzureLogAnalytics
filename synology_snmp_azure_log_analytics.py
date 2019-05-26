@@ -275,7 +275,7 @@ def get_disk_temperatures():
 	
 	disk_instances = []
 	for disk in disk_data:
-		if re.search("Disk", disk) or re.search("Cache", disk):
+		if re.search("Drive", disk) or re.search("Cache", disk) or re.search("Disk", disk):
 			disk_instances.append(get_snmp_instances(disk))
 	
 	for instance in disk_instances:
