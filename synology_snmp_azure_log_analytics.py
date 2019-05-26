@@ -39,7 +39,7 @@ capture_memory = "true"
 capture_network = "true"
 capture_volume = "true"
 capture_disk = "true"
-capture_ups = "true"
+capture_ups = "false" #Default is false, enable if you have an UPS connected to your Syno and want the metrics
 ups_name = "" #Leave blank if you want to have it be the hostname of the NAS, otherwise you customize it here
 
 # This is your Log Analytics workspace ID
