@@ -408,7 +408,7 @@ def __main__():
 	if capture_network == "true":
 		
 		#check if net_octets file exists
-		net_file = "/tmp/net_data.txt"
+		net_file = "/tmp/syno_net.txt"
 	
 		file_exists = os.path.isfile(net_file)
 		#Doesnt exist, we will create and put empty data for now.
