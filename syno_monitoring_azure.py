@@ -203,6 +203,13 @@ def get_network_counters():
 		counter_name = "Bytes Transmitted/sec"
 		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], tx_rate, counter_type))
 		
+		#Add raw data to counter capture list
+		counter_name = "Bytes Received"
+		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], current_rx, counter_type))
+		
+		counter_name = "Bytes Transmitted"
+		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], current_tx, counter_type))
+		
 		#add the current counters to the list
 		snmp_current_data[instance["name"]] = {
 			"rx" : current_rx,
@@ -312,6 +319,12 @@ def get_disk_counters():
 		counter_name = "Bytes Written/sec"
 		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], disk_writes, counter_type))
 		
+		#add raw data for calculation as needed.
+		counter_name = "Bytes Read"
+		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], current_reads, counter_type))
+		
+		counter_name = "Bytes Written"
+		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], current_writes, counter_type))
 		
 		#add the current counters to the list
 		snmp_current_data[instance["name"]] = {
