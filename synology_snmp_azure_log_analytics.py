@@ -29,7 +29,7 @@ import time
 host_address = "localhost" #NAS IP, suggest to run directly on NAS but can be remote 
 hostname = "" #Leave blank if you want it to pull from the NAS itself, otherwise it can be defined here.
 
-#Capture Interval in seconds. Highly recommend nothing below 20 seconds, set to 60 if you want it to capture every minute.
+#Capture Interval in seconds. Highly recommend nothing below 20 seconds, set to 60 if you want it to capture once per minute.
 capture_interval = 20
 
 #Stats to Capture, set to false for metrics not desired, true to be captured
@@ -163,59 +163,37 @@ def get_network_counters():
 			network_instances.append(get_snmp_instances(network))
 	
 	#iterate through each network instance and get details of interestered OID
-	net_current_list = []
+		
 	for instance in network_instances:
 	
 		#Getting Network Rx stat
 		oid_netrx = "1.3.6.1.2.1.2.2.1.10." + instance["id"]
 		current_rx = get_instance_value(oid_netrx, network_data, "int")
 		counter_name = "Total Octets Received"
-		#snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], net_rx, counter_type))
 	
 		oid_nettx = "1.3.6.1.2.1.2.2.1.16." + instance["id"]
 		current_tx = get_instance_value(oid_nettx, network_data, "int")
 		counter_name = "Total Octets Transmitted"
-		#snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], net_tx, counter_type))
 
 		oid_netspeed = "1.3.6.1.2.1.2.2.1.5." + instance["id"]
 		net_speed = get_instance_value(oid_netspeed, network_data, "int")
-		#snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], net_speed, counter_type))
 
-		current_timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-		current_timestamp = datetime.datetime.strptime(current_timestamp, '%Y-%m-%d %H:%M:%S')
-
-		if not net_previous_list:
+		current_timestamp = int((datetime.datetime.utcnow() - datetime.datetime.utcfromtimestamp(0)).total_seconds())
+		
+		#Check if we have a previous capture or if the instance/NIC name is new to us
+		if not snmp_previous_data or not instance["name"] in snmp_previous_data:
 			
 			rx_rate = 0
 			tx_rate = 0
 			
 		else:	
-		
-			#Get RX values and perform calculations for speed.
-			for net_previous in net_previous_list:
-				
-			#	print(net_previous + " and name is " + instance["name"])
-				if re.search(instance["name"] + " Rx", net_previous):
-					previous_rx = int(net_previous.rsplit('Rx ', 1)[-1])
-					
-					
-				if re.search(instance["name"] + " Tx", net_previous):
-					previous_tx = int(net_previous.rsplit('Tx ', 1)[-1])
-					
-	
-				if re.search("CaptureTime ", net_previous):
-					previous_capture = net_previous.rsplit('CaptureTime ', 1)[-1]
-					
-	
-				
+			
+			#Get time difference for caculation of the data rate
+			time_difference = int(current_timestamp) - int(snmp_previous_data["timecaptured"])
+			
 			#Calculate the speed
-	
-			#Get time difference
-			previous_timestamp = datetime.datetime.strptime(previous_capture, '%Y-%m-%d %H:%M:%S')
-			time_difference = int((current_timestamp - previous_timestamp).total_seconds())
-
-			rx_rate = abs(((current_rx - previous_rx) / time_difference )) 
-			tx_rate = abs(((current_tx - previous_tx) / time_difference ))
+			rx_rate = abs(((current_rx - snmp_previous_data[instance["name"]]["rx"]) / time_difference )) 
+			tx_rate = abs(((current_tx - snmp_previous_data[instance["name"]]["tx"]) / time_difference ))
 
 
 		#Add Data to counter capture list
@@ -226,13 +204,13 @@ def get_network_counters():
 		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], tx_rate, counter_type))
 		
 		#add the current counters to the list
-		net_current_list.append(instance["name"] + " Rx " + str(current_rx))
-		net_current_list.append(instance["name"] + " Tx " + str(current_tx))
+		snmp_current_data[instance["name"]] = {
+			"rx" : current_rx,
+			"tx" : current_tx
+		}
 	
-	#Add Current time and return list 		
-	net_current_list.append("CaptureTime " + str(current_timestamp))
-	return net_current_list
-		
+	#snmp_current_data["timecaptured"] = current_timestamp
+
 				
 #Getting Volume Information
 def get_volume_counters():
@@ -285,7 +263,6 @@ def get_disk_temperatures():
 		counter_name = "Disk Temperature"
 		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], disk_temp, counter_type))
 
-
 #Getting Logical Disk Information, still physical but MIB's separate the actual names and references so its focusing on more logical stats
 def get_disk_counters():
 	object_name = "Logical Disk"
@@ -300,24 +277,50 @@ def get_disk_counters():
 			disk_instances.append(get_snmp_instances(disk))
 	
 	for instance in disk_instances:
-	
-		#Commenting out disk read/writes because its just a big number, so who cares.
-		#oid_disk_reads = "1.3.6.1.4.1.6574.101.1.1.12." + instance["id"]
-		#disk_reads = get_instance_value(oid_disk_reads, disk_data, "int")
-		#counter_name = "Bytes Read Since Boot"
-		#snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], disk_reads, counter_type))
-		#
-		#oid_disk_writes = "1.3.6.1.4.1.6574.101.1.1.13." + instance["id"]
-		#disk_writes = get_instance_value(oid_disk_writes, disk_data, "int")
-		#counter_name = "Bytes Written Since Boot"
-		#snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], disk_writes, counter_type))
 		
 		oid_disk_load = "1.3.6.1.4.1.6574.101.1.1.8." + instance["id"]
 		disk_load = get_instance_value(oid_disk_load, disk_data, "int")
 		counter_name = "% Disk Load"
 		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], disk_load, counter_type))
+	
+		oid_disk_reads = "1.3.6.1.4.1.6574.101.1.1.12." + instance["id"]
+		current_reads = get_instance_value(oid_disk_reads, disk_data, "int")
+		
+		oid_disk_writes = "1.3.6.1.4.1.6574.101.1.1.13." + instance["id"]
+		current_writes = get_instance_value(oid_disk_writes, disk_data, "int")
 
+		current_timestamp = int((datetime.datetime.utcnow() - datetime.datetime.utcfromtimestamp(0)).total_seconds())
+		
+		#Check if we have a previous capture or if the instance/NIC name is new to us
+		if not snmp_previous_data or not instance["name"] in snmp_previous_data:
+			
+			disk_reads  = 0
+			disk_writes = 0
+			
+		else:	
+			
+			#Get time difference for caculation of the data rate
+			time_difference = int(current_timestamp) - int(snmp_previous_data["timecaptured"])
+			
+			#Calculate the speed
+			disk_reads = abs(((current_reads - snmp_previous_data[instance["name"]]["reads"]) / time_difference )) 
+			disk_writes = abs(((current_writes - snmp_previous_data[instance["name"]]["writes"]) / time_difference ))
 
+		counter_name = "Bytes Read/sec"
+		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], disk_reads, counter_type))
+		
+		counter_name = "Bytes Written/sec"
+		snmp_data.append(build_counter_list(hostname, object_name, counter_name, instance["name"], disk_writes, counter_type))
+		
+		
+		#add the current counters to the list
+		snmp_current_data[instance["name"]] = {
+			"reads" : current_reads,
+			"writes" : current_writes
+		}
+	
+	snmp_current_data["timecaptured"] = current_timestamp
+		
 #Getting UPS Information
 def get_ups_counters():
 	
@@ -341,8 +344,7 @@ def get_ups_counters():
 	ups_charge = get_instance_value(oid_ups_charge, ups_data, "percent")
 	counter_name = "% Battery Charge" 
 	snmp_data.append(build_counter_list(hostname, object_name, counter_name, ups_name, ups_charge, counter_type))
-    
-    
+
 
 # Build the API signature
 def build_signature(workspace_id, shared_key, date, content_length, method, content_type, resource):
@@ -353,6 +355,7 @@ def build_signature(workspace_id, shared_key, date, content_length, method, cont
     encoded_hash = base64.b64encode(hmac.new(decoded_key, bytes_to_hash, digestmod=hashlib.sha256).digest())
     authorization = "SharedKey {}:{}".format(workspace_id,encoded_hash)
     return authorization
+
 
 # Build and send a request to the POST API
 def post_data(workspace_id, shared_key, body, log_type):
@@ -396,6 +399,23 @@ def __main__():
 		counter_value = get_snmp_data(host_address, oid_hostname, snmpwalk_flags)
 		hostname = counter_value[0]
 
+	#Check if capturing anything that stores previous capture data and open
+	if capture_network == "true" or capture_disk == "true":
+		
+		global snmp_previous_data
+		global snmp_current_data
+		snmp_current_data = {}
+		
+		#check if net_octets file exists
+		data_file = "/tmp/syno_snmp.txt"
+			
+		try: 
+			with open(data_file) as json_file:
+				snmp_previous_data = json.load(json_file)
+		except:
+			print("File doesn't exist, starting fresh")
+			snmp_previous_data = None
+	
 	if capture_system_temperature == "true":
 		get_system_temperature()
 		
@@ -406,30 +426,8 @@ def __main__():
 		get_memory_counters()
 		
 	if capture_network == "true":
+		get_network_counters()
 		
-		#check if net_octets file exists
-		net_file = "/tmp/syno_net.txt"
-	
-		file_exists = os.path.isfile(net_file)
-		#Doesnt exist, we will create and put empty data for now.
-		if not file_exists:
-			net_file_create_handle = open(net_file, "w+")
-			net_file_create_handle.close()
-		
-		global net_previous_list
-		with open(net_file, "r+") as net_file_handle:
-			net_previous_list = net_file_handle.readlines()
-			#strip newline characters
-			net_previous_list = [x.strip() for x in net_previous_list]
-					
-			
-		net_current_list = get_network_counters()
-		
-		with open(net_file, "w") as net_file_handle:
-			for net_data in net_current_list:
-				#print(net_data)
-				net_file_handle.write(net_data + "\r\n")
-
 		
 	if capture_volume == "true":
 		get_volume_counters()
@@ -441,6 +439,11 @@ def __main__():
 	
 	if capture_ups == "true":
 		get_ups_counters()
+	
+	#Write the data to the file if the disk or network capture was done.
+	if capture_network == "true" or capture_disk == "true":
+		with open(data_file, 'w') as data_file_handle:  
+				json.dump(snmp_current_data, data_file_handle)
 	
 	#Convert list to JSON
 	body = json.dumps(snmp_data)
